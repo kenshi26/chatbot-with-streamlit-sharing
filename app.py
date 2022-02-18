@@ -1,22 +1,33 @@
 import streamlit as st
-import pya3rt
+import requests
 
 apikey = "DZZ4DDdz8w0Ki2OVNyaY7kejwbgzfMyS"
-client = pya3rt.TalkClient(apikey)
+#client = pya3rt.TalkClient(apikey)
+chat_logs = []
 
-st.title("Chatbot with streamlit")
+st.title("ソクラテス先生の相談窓口")
 st.subheader("メッセージを入力してから送信をタップしてください")
 message = st.text_input("メッセージ")
 
-chat_logs = []
 
-def send_pya3rt():
-    ans_json = client.talk(message)
+def send_pya3rt(endpoint, apikey, text, callback):
+    params = {'apikey': apikey,
+              'query': text,
+              }
+    if callback is not None:
+        params['callback'] = callback
+
+    response = requests.post(endpoint, params)
+
+    return response.json()
+
+def generate_response():
+    ans_json = send_pya3rt('https://api.a3rt.recruit.co.jp/talk/v1/smalltalk', apikey, message, None)
     ans = ans_json['results'][0]['reply']
     chat_logs.append('you: ' + message)
-    chat_logs.append('AI: ' + ans)
+    chat_logs.append('ソクラテス先生: ' + ans)
     for chat_log in chat_logs:
         st.write(chat_log)
 
 if st.button("送信"):
-    send_pya3rt()
+    generate_response()
